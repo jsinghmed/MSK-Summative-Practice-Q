@@ -1489,7 +1489,7 @@ function renderChaps(){
   }
   let tools = "";
   if (S.course==="msk") tools += navRow('data-act="limb3d"', NVI.limb, "3D upper limb", "", view==="limb3d") + navRow('data-act="leg3d"', NVI.limb, "3D lower limb", "", view==="leg3d") + navRow('data-act="plexus"', NVI.plexus, "Brachial plexus", "", view==="plexus");
-  if (S.course==="crs") tools += navRow('data-act="cap"', NVI.ap, "Cardiac action potentials", "", view==="cap") + navRow('data-act="pvl"', NVI.pv, "Cardiac cycle & PV loop", "", view==="pvl");
+  if (S.course==="crs") tools += navRow('data-act="heart3d"', NVI.limb, "3D heart", "", view==="heart3d") + navRow('data-act="cap"', NVI.ap, "Cardiac action potentials", "", view==="cap") + navRow('data-act="pvl"', NVI.pv, "Cardiac cycle & PV loop", "", view==="pvl");
   if (S.anki && S.anki.length) tools += navRow('data-act="anki"', NVI.anki, "Anki export", S.anki.length, view==="anki");
   if (tools) h += `<div class="chap-h">STUDY TOOLS</div><div class="nvg">${tools}</div>`;
   if (courseTests().length) {
@@ -2601,6 +2601,7 @@ function renderAll(){
   } else if (view==="builder") renderBuilder();
   else if (view==="notes") renderNotes();
   else if (view==="plexus") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← MSK home</button><h2>Brachial plexus</h2><a class="btn" href="brachial-plexus.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="brachial-plexus.html?v=35" title="Interactive brachial plexus"></iframe></div>`);
+  else if (view==="heart3d") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← CRS home</button><h2>3D heart atlas</h2><a class="btn" href="heart-3d.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="heart-3d.html?v=1" title="Interactive 3D heart atlas"></iframe></div>`);
   else if (view==="cap") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← CRS home</button><h2>Cardiac action potentials</h2><a class="btn" href="cardiac-ap.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="cardiac-ap.html?v=1" title="Interactive cardiac action potential explorer"></iframe></div>`);
   else if (view==="pvl") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← CRS home</button><h2>Cardiac cycle & PV loop</h2><a class="btn" href="cardiac-cycle.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="cardiac-cycle.html?v=1" title="Interactive cardiac cycle and pressure-volume loop simulator"></iframe></div>`);
   else if (view==="limb3d") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← MSK home</button><h2>3D upper limb atlas</h2><a class="btn" href="upper-limb-3d.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="upper-limb-3d.html?v=1" title="Interactive 3D upper limb atlas"></iframe></div>`);
@@ -2806,7 +2807,7 @@ document.addEventListener("click", e=>{
   const gj = t.closest("[data-gjump]");
   if (gj) { e.preventDefault(); const el = document.getElementById(gj.dataset.gjump); if (el) el.scrollIntoView({behavior:"smooth", block:"start"}); return; }
   const act = t.closest("[data-act]");
-  if (act) { view = ({build:"builder", plexus:"plexus", limb3d:"limb3d", leg3d:"leg3d", cap:"cap", pvl:"pvl", guides:"guides", anki:"anki", notes:"notes"})[act.dataset.act] || "notes"; $("side").classList.remove("open"); renderAll(); $("main").scrollTo({top:0}); return; }
+  if (act) { view = ({build:"builder", plexus:"plexus", limb3d:"limb3d", leg3d:"leg3d", cap:"cap", pvl:"pvl", heart3d:"heart3d", guides:"guides", anki:"anki", notes:"notes"})[act.dataset.act] || "notes"; $("side").classList.remove("open"); renderAll(); $("main").scrollTo({top:0}); return; }
   if (t.closest("[data-plexback]")) { view = "home"; renderAll(); $("main").scrollTo({top:0}); return; }
   // sidebar
   const rv = t.closest("[data-rv]");
