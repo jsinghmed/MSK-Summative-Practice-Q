@@ -53,7 +53,21 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 /* sidebar */
 .side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.brand{padding:20px 18px 14px}
+.brand{padding:20px 18px 14px;position:relative}
+/* collapsible sidebar (desktop) */
+.sidecol-btn{position:absolute;top:18px;right:10px;width:30px;height:30px;border-radius:8px;border:1px solid var(--line2);background:var(--card);color:var(--muted);display:grid;place-items:center;cursor:pointer;z-index:2}
+.sidecol-btn:hover{color:var(--text);border-color:var(--acc,#4fb8b0)}
+.sideopen-btn{position:fixed;top:12px;left:12px;z-index:60;display:none;align-items:center;gap:6px;padding:7px 11px;border-radius:9px;border:1px solid var(--line2);background:var(--panel);color:var(--text);font:600 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+@media (min-width:761px){
+  .app.sidecol{grid-template-columns:70px 1fr}.app.sidecol.norail,.app.sidecol.focus{grid-template-columns:1fr}
+  .app.sidecol .side{display:none}
+  .app.sidecol ~ .sideopen-btn,.sideopen-btn.show{display:inline-flex}
+  .app.sidecol .main{padding-left:max(24px,env(safe-area-inset-left))}
+  .app.sidecol .page{padding-top:40px}
+  .app.sidecol .page.plexpage{max-width:none}
+  .app.sidecol .plexframe{height:calc(100vh - 150px)}
+}
+@media (max-width:760px){.sidecol-btn,.sideopen-btn{display:none!important}}
 .brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.2px}
 .brand p{margin:5px 0 0;color:var(--muted);font-size:13px}
 .stools{padding:0 12px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
@@ -953,7 +967,7 @@ button.dst:hover{background:var(--hover)}
 <script>(function(){var w=document.getElementById("spLogo");if(!w)return;var t=w.querySelector(".sp-tx"),c=t.cloneNode();c.className="sp-ic";c.alt="";c.setAttribute("aria-hidden","true");w.insertBefore(c,t);if(!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches))setTimeout(function(){w.classList.add("beat")},2300);})();</script>
 <div class="app" id="app">
   <aside class="side" id="side">
-    <div class="brand" id="brandHome" title="Home"><div class="jjlogo" aria-label="JJ QBank"><span class="lg-mark"><i class="t"></i><i class="w"></i></span><span class="lg-word"><i class="t"></i><i class="w"></i></span></div><div class="bcourse"><h1 id="brandTitle">MSK Summative</h1><p id="brandSub"></p></div></div>
+    <div class="brand" id="brandHome" title="Home"><button class="sidecol-btn" id="sideColBtn" type="button" title="Collapse the menu (\)" aria-label="Collapse the menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/><path d="M20 4v16"/></svg></button><div class="jjlogo" aria-label="JJ QBank"><span class="lg-mark"><i class="t"></i><i class="w"></i></span><span class="lg-word"><i class="t"></i><i class="w"></i></span></div><div class="bcourse"><h1 id="brandTitle">MSK Summative</h1><p id="brandSub"></p></div></div>
     <div class="ctabs" id="ctabs"></div>
     <div class="stools">
       <div class="search" id="searchWrap">
@@ -3125,6 +3139,16 @@ setTimeout(function(){
   m.innerHTML = '<div><b>Sign-in couldn\'t load</b>JJ QBank needs Google sign-in. Check your connection, turn off any blocker for this site, and refresh.<br><button onclick="location.reload()">Refresh</button></div>';
   document.body.appendChild(m);
 }, 4000);
+</script>
+<button class="sideopen-btn" id="sideOpenBtn" type="button" title="Show the menu (\)" aria-label="Show the menu"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menu</button>
+<script>
+(function(){var app=document.getElementById("app"),ob=document.getElementById("sideOpenBtn");
+ function set(c){app.classList.toggle("sidecol",c);ob.classList.toggle("show",c);try{localStorage.setItem("jj-sidecol",c?"1":"0");}catch(e){}setTimeout(function(){window.dispatchEvent(new Event("resize"));},60);}
+ try{if(localStorage.getItem("jj-sidecol")==="1")set(true);}catch(e){}
+ document.getElementById("sideColBtn").addEventListener("click",function(e){e.stopPropagation();set(true);});
+ ob.addEventListener("click",function(){set(false);});
+ document.addEventListener("keydown",function(e){if(e.key!=="\\"||e.metaKey||e.ctrlKey||e.altKey)return;var a=document.activeElement;if(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"||a.isContentEditable))return;e.preventDefault();set(!app.classList.contains("sidecol"));});
+})();
 </script>
 </body>
 </html>
