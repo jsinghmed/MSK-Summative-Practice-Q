@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cardiac Cycle & PV Loop</title>
+<script>function jjTheme(){try{var th=localStorage.getItem("msk-theme");document.documentElement.setAttribute("data-theme",th==="light"?"light":"dark");}catch(e){}}jjTheme();window.addEventListener("storage",function(e){if(e.key==="msk-theme")jjTheme();});window.addEventListener("message",function(e){if(e.data==="jj-theme")jjTheme();});</script>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--card:#1c2129;--line:#2a313c;--line2:#353d4a;--text:#e6edf3;--muted:#8b949e;--acc:#4fb8b0;--accbg:rgba(79,184,176,.14);
+  --lv:#ff6b6b;--ao:#f2b84b;--la:#6cb6ff;--vol:#b48cff;--ecg:#3fb950;--grid:rgba(139,148,158,.14);--ghost:rgba(139,148,158,.55);--band:rgba(139,148,158,.07)}
+:root[data-theme="light"]{--bg:#f6f8fa;--panel:#fff;--card:#f6f8fa;--line:#d0d7de;--line2:#c3cad2;--text:#1f2328;--muted:#59636e;--acc:#1a8c84;--accbg:rgba(26,140,132,.1);
+  --lv:#d63a3a;--ao:#b7791f;--la:#1f6feb;--vol:#8250df;--ecg:#1a7f37;--grid:rgba(89,99,110,.14);--ghost:rgba(89,99,110,.5);--band:rgba(89,99,110,.06)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{padding:14px 16px 24px;max-width:1500px;margin:0 auto}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.top h1{font-size:18px;margin:0}.top .sub{color:var(--muted);font-size:13px}
+.tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--card);border:1px solid var(--line2);border-radius:9px;padding:7px 12px;font-weight:600;font-size:13px}
+.btn.on{background:var(--accbg);border-color:var(--acc)}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line2);border-radius:9px;padding:2px}
+.seg button{background:none;border:none;border-radius:7px;padding:5px 9px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--accbg);color:var(--text);box-shadow:inset 0 0 0 1px var(--acc)}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.card h3{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:Inter,system-ui,sans-serif}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.pvrow{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:start}
+@media (max-width:560px){.pvrow{grid-template-columns:minmax(0,1fr)}#heart{max-width:150px;margin:0 auto}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 8px}
+.st b{display:block;font-size:16px;font-variant-numeric:tabular-nums}.st span{font-size:11px;color:var(--muted)}
+.st em{font-style:normal;font-size:11px;font-weight:700;margin-left:4px}.st em.up{color:#3fb950}.st em.dn{color:#f85149}
+:root[data-theme="light"] .st em.up{color:#1a7f37}:root[data-theme="light"] .st em.dn{color:#cf222e}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.presets button{background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:600}
+.presets button.on{background:var(--accbg);border-color:var(--acc)}
+.presets .gl{width:100%;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 18px}
+.sl label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600}
+.sl label span{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.sl input{width:100%;accent-color:var(--acc)}
+.sl small{color:var(--muted);font-size:11.5px}
+.info{margin-top:12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.info b.t{display:block;font-size:14.5px;margin-bottom:3px}
+.info ul{margin:6px 0 0;padding-left:18px}.info li{margin:2px 0}
+.info .pearl{margin-top:6px;color:var(--muted)}
+.phase{font-size:13px;margin-top:6px;min-height:20px}.phase b{color:var(--acc)}
+.qz{display:none}.quiz .qz{display:block}.quiz .noq{display:none}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.qopts button{background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:10px;font-weight:600;text-align:left}
+.qopts button.ok{border-color:#3fb950;background:rgba(63,185,80,.14)}.qopts button.bad{border-color:#f85149;background:rgba(248,81,73,.12)}
+.qfb{margin-top:10px;font-size:13.5px}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+</style></head><body>
+<div class="wrap" id="app">
+  <div class="top"><div><h1>Cardiac cycle & PV loop</h1><div class="sub">Left heart simulator · move a slider or pick a condition and watch every curve respond</div></div>
+    <div class="tb"><button class="btn" id="play">⏸ Pause</button>
+      <div class="seg" id="speed"><button data-sp="0.25">¼×</button><button data-sp="0.5" class="on">½×</button><button data-sp="1">1×</button></div>
+      <button class="btn" id="ghostBtn">Compare to normal</button><button class="btn" id="quizBtn">🎯 Quiz me</button></div></div>
+  <div class="grid">
+    <div class="card"><h3>Wiggers diagram <span style="text-transform:none;letter-spacing:0;font-weight:500" id="hrLbl"></span></h3>
+      <svg id="wig" viewBox="0 0 760 520" aria-label="Wiggers diagram"></svg>
+      <div class="legend"><span><i style="background:var(--ao)"></i>Aortic pressure</span><span><i style="background:var(--lv)"></i>LV pressure</span><span><i style="background:var(--la)"></i>LA pressure</span><span><i style="background:var(--vol)"></i>LV volume</span><span><i style="background:var(--ecg)"></i>ECG</span></div>
+      <div class="phase" id="phase"></div></div>
+    <div class="right">
+      <div class="card"><h3>Pressure–volume loop <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">LV</span></h3>
+        <div class="pvrow"><svg id="pv" viewBox="0 0 420 330" aria-label="Pressure volume loop"></svg>
+          <div><svg id="heart" viewBox="0 0 150 170" aria-label="Valves"></svg><div class="hint" id="valves" style="text-align:center"></div></div></div>
+        <div class="hint" style="margin:-2px 0 8px">Ⓐ mitral closes · Ⓑ aortic opens · Ⓒ aortic closes · Ⓓ mitral opens · dot = this moment in the beat</div><div class="stats" id="stats"></div></div>
+      <div class="card noq"><h3>Conditions</h3>
+        <div class="presets" id="presets"></div>
+        <div class="sliders" id="sliders"></div>
+        <div class="info" id="info"></div></div>
+      <div class="card qz" id="quiz"></div>
+    </div>
+  </div>
+</div>
+<script>
+// Lumped-parameter model of the left heart: pulmonary veins → LA → mitral valve → LV → aortic valve → aorta (Windkessel) → systemic resistance.
+// Units: pressure mmHg, volume mL, time s, resistance mmHg·s/mL, compliance mL/mmHg.
+function simulate(p){
+  const T = 60/p.hr, k = Math.sqrt(T/0.8);
+  const Tp = 0.32*k, Tr = 0.14*k;                       // LV contraction / relaxation time
+  const Ta = 0.11*k, aStart = T - 0.17*k;               // atrial kick timing (just before ventricular systole)
+  const dt = 0.0002, beats = p.beats || 12, n = Math.round(T/dt);
+  let Vlv = 120, Vla = 55, Pao = 85;
+  const out = [];
+  const Tp1 = (p.tp1||0.55)*Tp, eEnd = Tp1 >= Tp ? 1 : 0.88;   // activation rises fast, declines slowly through late ejection, then relaxes quickly
+  const eLV = t => t < Tp1 ? 0.5*(1-Math.cos(Math.PI*t/Tp1)) : t < Tp ? 1 - 0.12*(t-Tp1)/(Tp-Tp1) : t < Tp+Tr ? eEnd*0.5*(1+Math.cos(Math.PI*(t-Tp)/Tr)) : 0;
+  const eLA = t => (t >= aStart && t < aStart+Ta) ? Math.sin(Math.PI*(t-aStart)/Ta) : 0;
+  for (let b = 0; b < beats; b++) {
+    const rec = b === beats-1;
+    for (let i = 0; i < n; i++) {
+      const t = i*dt, e = eLV(t), ea = eLA(t);
+      const Ped = p.edA*(Math.exp(p.edB*(Vlv-p.V0))-1);
+      const Plv = e*p.Ees*(Vlv-p.V0) + (1-e)*Ped;
+      const Pla = (p.Ela + ea*p.Ela_act)*(Vla-10);
+      // valves (diode + optional leak)
+      let Qmv = Pla > Plv ? (Pla-Plv)/p.Rmv : (p.Rmr ? (Pla-Plv)/p.Rmr : 0);
+      let Qav = Plv > Pao ? (Plv-Pao)/(p.Rav+p.Zc) : (p.Rar ? (Plv-Pao)/(p.Rar+p.Zc) : 0);
+      const PaoRoot = Pao + p.Zc*Qav;   // aortic root pressure (3-element Windkessel)
+      const Qpv = (p.Ppv - Pla)/0.02;                    // pulmonary venous inflow (preload)
+      const Qsys = Pao/p.Rsys;
+      if (rec && i % 10 === 0) out.push({t, Plv, Pao:PaoRoot, Pla, Vlv, Vla, Qmv, Qav, e, ea});
+      Vlv += (Qmv - Qav)*dt; Vla += (Qpv - Qmv)*dt; Pao += (Qav - Qsys)/p.Cao*dt;
+    }
+  }
+  // summary
+  const V = out.map(o=>o.Vlv), EDV = Math.max(...V), ESV = Math.min(...V);
+  const fwd = out.reduce((s,o)=>s + Math.max(0,o.Qav)*dt*10, 0);
+  const back = out.reduce((s,o)=>s + Math.max(0,-o.Qav)*dt*10, 0);
+  const mrBack = out.reduce((s,o)=>s + Math.max(0,-o.Qmv)*dt*10, 0);
+  const net = fwd - back;
+  const sys = Math.max(...out.map(o=>o.Pao)), dia = Math.min(...out.map(o=>o.Pao));
+  const map = out.reduce((s,o)=>s+o.Pao,0)/out.length;
+  const pk = Math.max(...out.map(o=>o.Plv));
+  // LV end-diastolic pressure: LV pressure at the sample with max volume
+  const lvedp = out[0].Plv;   // LV pressure at the onset of contraction
+  const laMean = out.reduce((s,o)=>s+o.Pla,0)/out.length;
+  return {T, out, EDV, ESV, SV:EDV-ESV, fwd, net, back, mrBack, EF:(EDV-ESV)/EDV, CO: net*p.hr/1000, sys, dia, map, pk, lvedp, laMean, Tp, Tr, aStart, Ta};
+}
+const BASE = {hr:75, Ees:2.8, V0:10, edA:0.5, edB:0.028, Ela:0.22, Ela_act:0.35, Rmv:0.005, Rav:0.004, Rmr:0, Rar:0, Ppv:9, Rsys:1.2, Cao:1.25, Zc:0.035, tp1:1};
+
+
+const $ = id => document.getElementById(id);
+const PRESETS = [
+ {k:"normal", g:"Basics", n:"Normal", p:{}, t:"Normal cardiac cycle",
+  pts:["<b>A → B</b> isovolumetric contraction: mitral closes (S1), pressure rises with no volume change","<b>B → C</b> ejection: aortic valve opens, volume falls","<b>C → D</b> isovolumetric relaxation: aortic closes (S2), pressure falls","<b>D → A</b> filling: mitral opens; rapid filling, diastasis, then the atrial kick"],
+  pearl:"Width of the loop = stroke volume. Top-left corner (aortic valve closing) sits on the ESPVR line, whose slope = contractility."},
+ {k:"pre", g:"Basics", n:"↑ Preload", p:{Ppv:15}, t:"Increased preload (e.g., IV fluids, ↑ venous return)",
+  pts:["Loop widens to the <b>right</b>: ↑ EDV","↑ Stroke volume via Frank–Starling","ESV barely changes, so EF stays about the same"], pearl:"Preload ≈ EDV / LVEDP. Venodilators (nitrates) do the opposite."},
+ {k:"aft", g:"Basics", n:"↑ Afterload", p:{Rsys:1.9}, t:"Increased afterload (e.g., hypertension, vasoconstriction)",
+  pts:["Loop gets <b>taller and narrower</b>: ↑ aortic & peak LV pressure","↑ ESV (the ventricle can't empty as far)","↓ Stroke volume and ↓ EF"], pearl:"Afterload ≈ aortic pressure the LV must overcome. ACE inhibitors / ARBs and arteriolar dilators lower it."},
+ {k:"con", g:"Basics", n:"↑ Contractility", p:{Ees:4.5}, t:"Increased contractility (sympathetic, dobutamine, digoxin)",
+  pts:["ESPVR line gets <b>steeper</b>","↓ ESV, ↑ stroke volume, ↑ EF","Loop extends further to the <b>left</b>"], pearl:"Contractility changes ESV; preload changes EDV — a favorite NBME distinction."},
+ {k:"ex", g:"Basics", n:"Exercise", p:{hr:140, Ees:4.2, Rsys:0.8, Ppv:11}, t:"Exercise",
+  pts:["↑ Heart rate and ↑ contractility (sympathetic)","↓ Total peripheral resistance (muscle vasodilation)","↑ Cardiac output, with a shorter diastole"], pearl:"At high heart rates diastole shortens much more than systole — filling time is what suffers."},
+ {k:"hfr", g:"Heart failure", n:"Systolic HF (HFrEF)", p:{Ees:1.2, Ppv:17}, t:"Systolic heart failure (HFrEF)",
+  pts:["ESPVR <b>flattens</b> (↓ contractility)","Loop shifts <b>right</b>: ↑ EDV and ↑ ESV, ↓ EF","↑ LVEDP → pulmonary congestion"], pearl:"Dilated ventricle → <b>S3</b>. Causes: ischemic heart disease, dilated cardiomyopathy."},
+ {k:"hfp", g:"Heart failure", n:"Diastolic HF (HFpEF)", p:{edA:0.7, edB:0.042, Ppv:17}, t:"Diastolic heart failure (HFpEF)",
+  pts:["EDPVR curve gets <b>steeper</b> (stiff ventricle)","Smaller EDV but a high LVEDP","EF is preserved"], pearl:"Stiff ventricle → <b>S4</b> (atrial kick against a stiff wall). Causes: hypertension with LVH, aging, restrictive cardiomyopathy."},
+ {k:"as", g:"Valve disease", n:"Aortic stenosis", p:{Rav:0.07, Ees:3.6, edB:0.034, Ppv:12}, t:"Aortic stenosis",
+  pts:["LV pressure rises far <b>above</b> aortic pressure during ejection (pressure gradient)","Taller loop; concentric LVH over time","Ejection is slowed — the aortic upstroke is delayed (pulsus parvus et tardus)"], pearl:"Crescendo–decrescendo systolic ejection murmur, right 2nd ICS → carotids. Syncope, angina, dyspnea. S4."},
+ {k:"ar", g:"Valve disease", n:"Aortic regurgitation", p:{Rar:0.65, edB:0.017, Ppv:10}, t:"Aortic regurgitation (chronic)",
+  pts:["<b>No true isovolumetric relaxation</b> — the LV fills from the aorta as soon as the valve closes","Very large EDV and total stroke volume (eccentric hypertrophy)","<b>Wide pulse pressure</b> — high systolic, low diastolic"], pearl:"Early diastolic decrescendo murmur, left sternal border. Bounding pulses, head bobbing (de Musset)."},
+ {k:"ms", g:"Valve disease", n:"Mitral stenosis", p:{Rmv:0.11, Ppv:18}, t:"Mitral stenosis",
+  pts:["<b>High LA pressure</b> with a pressure gradient across the mitral valve in diastole","LV is <b>underfilled</b>: small EDV, low LVEDP","Small, left-shifted loop"], pearl:"Opening snap + mid-diastolic rumble at the apex. LA enlargement → AFib. Usually rheumatic heart disease."},
+ {k:"mr", g:"Valve disease", n:"Mitral regurgitation", p:{Rmr:0.3, Ppv:13, Ela:0.12}, t:"Mitral regurgitation (chronic)",
+  pts:["<b>No true isovolumetric contraction</b> — blood leaks into the LA as soon as the LV contracts","↑ EDV, ↓ ESV: EF looks high, but forward flow is reduced","Tall LA <b>v waves</b>"], pearl:"Holosystolic murmur at the apex → axilla. Causes: MVP, ischemic papillary muscle rupture, LV dilation."}
+];
+const SL = [
+ {k:"Ppv", n:"Preload", u:"mmHg", min:4, max:25, st:0.5, f:v=>v.toFixed(1), d:"Venous filling pressure"},
+ {k:"Rsys", n:"Afterload", u:"×", min:0.6, max:2.4, st:0.05, f:v=>(v/1.2).toFixed(2)+"×", d:"Total peripheral resistance"},
+ {k:"Ees", n:"Contractility", u:"", min:0.8, max:5.5, st:0.1, f:v=>(v/2.8).toFixed(2)+"×", d:"Slope of the ESPVR"},
+ {k:"hr", n:"Heart rate", u:"bpm", min:45, max:170, st:1, f:v=>v.toFixed(0)+" bpm", d:"Beats per minute"},
+ {k:"edB", n:"Ventricular stiffness", u:"", min:0.015, max:0.05, st:0.001, f:v=>(v/0.028).toFixed(2)+"×", d:"Steepness of the EDPVR"}
+];
+let P = Object.assign({}, BASE), cur = "normal", R = null, RN = simulate(BASE), ghost = false, playing = true, speed = 0.5, ph = 0, last = 0;
+let quiz = null;
+
+// ---------- helpers ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, at, txt){ const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (txt!==undefined) e.textContent = txt; return e; }
+function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function events(r){
+  // aortic valve: first and last sample with forward flow; mitral closes at the last forward mitral flow before ejection,
+  // and reopens at the first forward mitral flow after the aortic valve closes.
+  const o = r.out, n = o.length;
+  let avo = o.findIndex(s=>s.Qav>0.5); if (avo<0) avo = Math.floor(n*0.1);
+  let avc = avo; for (let i=avo;i<n;i++) if (o[i].Qav>0.5) avc = i; avc = Math.min(n-1, avc+1);
+  let mvc = 0; for (let i=0;i<avo;i++) if (o[i].Qmv>0.5) mvc = i+1;
+  let mvo = o.findIndex((s,i)=>i>avc && s.Qmv>0.5); if (mvo<0) mvo = Math.floor(n*0.6);
+  return {mvc, avo, avc, mvo};
+}
+// display window starts shortly before the P wave so the beat reads P → QRS → systole → T → diastole
+function order(r){ const n = r.out.length, s0 = Math.floor(((r.aStart-0.06)/r.T)*n); return [...Array(n).keys()].map(i=>(i+s0)%n); }
+function ecgAt(t, r){
+  const T=r.T, g=(c,w,a)=>a*Math.exp(-0.5*((t-c)/w)**2), g2=(c,w,a)=>a*Math.exp(-0.5*(((t-c+T)%T - (T/2)) - (0 - T/2) )**2/w/w);
+  const wrap = c => { let d = t - c; d = ((d % T) + 1.5*T) % T - T/2; return d; };
+  const G = (c,w,a)=>a*Math.exp(-0.5*(wrap(c)/w)**2);
+  const pC = r.aStart - 0.02;
+  return G(pC,0.025,0.12) + G(-0.035,0.008,-0.12) + G(-0.02,0.009,1) + G(-0.005,0.01,-0.25) + G(r.Tp+0.06,0.045,0.28);
+}
+function phaseOf(i, ev, r){
+  const s = r.out[i];
+  if (i < ev.mvc) return ["Atrial systole ends", "Mitral valve closing"];
+  if (i < ev.avo) return [P.Rmr ? "“Isovolumetric” contraction" : "Isovolumetric contraction", P.Rmr ? "Both valves shut — but blood is already leaking back into the LA" : "Mitral closed (S1), aortic not yet open — pressure rises, volume constant"];
+  if (i < ev.avc) return ["Ejection", "Aortic valve open — blood leaves the LV"];
+  if (i < ev.mvo) return [P.Rar ? "“Isovolumetric” relaxation" : "Isovolumetric relaxation", P.Rar ? "Aortic valve closed — but the leaking valve keeps filling the LV" : "Aortic closed (S2), mitral not yet open — pressure falls, volume constant"];
+  if (s.ea > 0.02) return ["Atrial systole", "Atrial kick tops up the ventricle (a wave)"];
+  const fr = (i-ev.mvo)/(r.out.length-ev.mvo);
+  return fr < 0.35 ? ["Rapid filling", "Mitral open — blood rushes in from the LA"] : ["Diastasis", "Slow filling; pressures nearly equal"];
+}
+
+// ---------- Wiggers diagram ----------
+function drawWig(){
+  const svg = $("wig"); svg.innerHTML = "";
+  const r = R, ev = events(r), idx = order(r), n = idx.length, W = 760, L = 54, Rg = 14, X = i => L + (W-L-Rg)*i/(n-1);
+  const pMax = Math.max(130, Math.ceil(Math.max(r.pk, r.sys, RN.pk)/20)*20+10);
+  const pTop=16, pBot=250, vTop=282, vBot=370, eTop=392, eBot=450, sTop=468, sBot=510;
+  const Y = v => pBot - (pBot-pTop)*v/pMax;
+  const vMax = Math.max(r.EDV, RN.EDV)*1.12+10, vMin = Math.max(0, Math.min(r.ESV, RN.ESV)*0.8-10);
+  const YV = v => vBot - (vBot-vTop)*(v-vMin)/(vMax-vMin);
+  const pos = j => idx.indexOf(j);
+  // phase bands
+  const bands = [[ev.mvc, ev.avo, "IVC"], [ev.avo, ev.avc, "Ejection"], [ev.avc, ev.mvo, "IVR"]];
+  bands.forEach(([a,b,lab],k)=>{ const x1=X(pos(a)), x2=X(pos(b)); if (x2>x1) { svg.append(el("rect",{x:x1,y:pTop-6,width:x2-x1,height:sBot-pTop+6,fill:k===1?"var(--band)":"var(--band)",opacity:k===1?1.6:1}));
+    svg.append(el("text",{x:(x1+x2)/2,y:pTop+2,"text-anchor":"middle","font-size":10.5,fill:"var(--muted)","font-weight":600},lab)); } });
+  // gridlines + axis
+  for (let v=0; v<=pMax; v+=20) { svg.append(el("line",{x1:L,x2:W-Rg,y1:Y(v),y2:Y(v),stroke:"var(--grid)"})); svg.append(el("text",{x:L-6,y:Y(v)+4,"text-anchor":"end","font-size":10.5,fill:"var(--muted)"},v)); }
+  svg.append(el("text",{x:12,y:(pTop+pBot)/2,"font-size":11,fill:"var(--muted)",transform:`rotate(-90 12 ${(pTop+pBot)/2})`,"text-anchor":"middle"},"Pressure (mmHg)"));
+  svg.append(el("text",{x:12,y:(vTop+vBot)/2,"font-size":11,fill:"var(--muted)",transform:`rotate(-90 12 ${(vTop+vBot)/2})`,"text-anchor":"middle"},"Volume"));
+  [Math.round(vMin/10)*10, Math.round(vMax/10)*10].forEach(v=>{ if (YV(v)>=vTop-2 && YV(v)<=vBot+2) svg.append(el("text",{x:L-6,y:YV(v)+4,"text-anchor":"end","font-size":10,fill:"var(--muted)"},v)); });
+  const line = (f, col, w, dash) => { let d=""; for (let i=0;i<n;i+=2) d += (i?"L":"M")+X(i).toFixed(1)+" "+f(r.out[idx[i]]).toFixed(1); svg.append(el("path",{d,fill:"none",stroke:col,"stroke-width":w,"stroke-linejoin":"round","stroke-dasharray":dash||""})); };
+  if (ghost && cur!=="normal") { const ri = order(RN), nn = ri.length; let d=""; for (let i=0;i<nn;i+=3) d += (i?"L":"M")+(L+(W-L-Rg)*i/(nn-1)).toFixed(1)+" "+Y(RN.out[ri[i]].Plv).toFixed(1); svg.append(el("path",{d,fill:"none",stroke:"var(--ghost)","stroke-width":1.5,"stroke-dasharray":"4 4"})); }
+  line(o=>Y(o.Pao), "var(--ao)", 2.4); line(o=>Y(o.Pla), "var(--la)", 2.2); line(o=>Y(o.Plv), "var(--lv)", 2.6);
+  line(o=>YV(o.Vlv), "var(--vol)", 2.4);
+  // ECG
+  const eMid = (eTop+eBot)/2+10; let d=""; for (let i=0;i<n;i+=2){ const t=r.out[idx[i]].t; d += (i?"L":"M")+X(i).toFixed(1)+" "+(eMid - ecgAt(t,r)*44).toFixed(1); }
+  svg.append(el("path",{d,fill:"none",stroke:"var(--ecg)","stroke-width":1.8}));
+  svg.append(el("text",{x:L-6,y:eMid+4,"text-anchor":"end","font-size":10.5,fill:"var(--muted)"},"ECG"));
+  // heart sounds / murmurs
+  svg.append(el("text",{x:L-6,y:(sTop+sBot)/2+4,"text-anchor":"end","font-size":10.5,fill:"var(--muted)"},"Sounds"));
+  svg.append(el("line",{x1:L,x2:W-Rg,y1:(sTop+sBot)/2,y2:(sTop+sBot)/2,stroke:"var(--grid)"}));
+  const snd = (i, lab) => { const x = X(pos(i)); svg.append(el("rect",{x:x-2,y:sTop+4,width:4,height:sBot-sTop-8,rx:2,fill:"var(--text)"})); svg.append(el("text",{x,y:sTop-1,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"var(--text)"},lab)); };
+  const mid = (sTop+sBot)/2, h = (sBot-sTop)/2-4;
+  const murmur = (pts, lab) => { svg.append(el("path",{d:"M"+pts.map(p=>p.join(" ")).join("L")+"Z",fill:"var(--lv)",opacity:.35})); svg.append(el("text",{x:pts[Math.floor(pts.length/2)][0],y:sBot+12,"text-anchor":"middle","font-size":10,fill:"var(--muted)"},lab)); };
+  const xs = i => X(pos(i));
+  if (cur==="as") { const a=xs(ev.avo)+4, b=xs(ev.avc)-4, m=(a+b)/2; murmur([[a,mid],[m,mid-h],[b,mid],[m,mid+h]], "crescendo–decrescendo"); }
+  if (cur==="mr") { const a=xs(ev.mvc)+5, b=xs(ev.mvo)-5; murmur([[a,mid-h*0.7],[b,mid-h*0.7],[b,mid+h*0.7],[a,mid+h*0.7]], "holosystolic"); }
+  if (cur==="ar") { const a=xs(ev.avc)+5, b=a+(xs(ev.mvo)-a)*2.2; murmur([[a,mid-h],[Math.min(b,W-Rg),mid],[a,mid+h]], "early diastolic decrescendo"); }
+  if (cur==="ms") { const a=xs(ev.mvo)+16, b=W-Rg-4, c=xs(ev.mvc)-6; svg.append(el("text",{x:xs(ev.mvo)+6,y:sTop-1,"font-size":10,"font-weight":700,fill:"var(--text)"},"OS"));
+    svg.append(el("rect",{x:xs(ev.mvo)+4,y:sTop+8,width:3,height:sBot-sTop-16,fill:"var(--text)"}));
+    murmur([[a,mid-h*0.45],[b,mid-h*0.45],[b,mid+h*0.45],[a,mid+h*0.45]], "mid-diastolic rumble"); if (c>L+4) murmur([[L+2,mid-h*0.3],[c,mid-h],[c,mid+h],[L+2,mid+h*0.3]], ""); }
+  snd(ev.mvc, "S1"); snd(ev.avc, "S2");
+  if (cur==="hfr" || cur==="mr" || cur==="ar") { const x = X(Math.min(n-1, pos(ev.mvo)+Math.round(n*0.08))); svg.append(el("rect",{x:x-1.5,y:sTop+12,width:3,height:sBot-sTop-24,rx:1.5,fill:"var(--muted)"})); svg.append(el("text",{x,y:sTop-1,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"var(--muted)"},"S3")); }
+  if (cur==="hfp" || cur==="as") { const ia = r.out.findIndex(o=>o.ea>0.6); if (ia>0) { const x = X(pos(ia)); svg.append(el("rect",{x:x-1.5,y:sTop+12,width:3,height:sBot-sTop-24,rx:1.5,fill:"var(--muted)"})); svg.append(el("text",{x,y:sTop-1,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"var(--muted)"},"S4")); } }
+  // valve event labels on LV curve
+  const evl = [[ev.mvc,"MV closes"],[ev.avo,"AV opens"],[ev.avc,"AV closes"],[ev.mvo,"MV opens"]];
+  evl.forEach(([i,lab],k)=>{ const x = X(pos(i)), y = Y(r.out[i].Plv); svg.append(el("circle",{cx:x,cy:y,r:3.5,fill:"var(--panel)",stroke:"var(--text)","stroke-width":1.5}));
+    svg.append(el("text",{x:x+(k%2?6:-6),y:y+(k<2? -8: (k===2?-8:14)),"text-anchor":k%2?"start":"end","font-size":10.5,fill:"var(--muted)"},lab)); });
+  // wave labels on LA trace (a, c, v)
+  const ia = r.out.reduce((b,o,i)=>o.ea>0&&o.Pla>r.out[b].Pla&&o.ea>0?i:b, idx[0]);
+  let iv = ev.avc; for (let i=ev.avc;i<ev.mvo+5 && i<n;i++) if (r.out[i].Pla > r.out[iv].Pla) iv = i;
+  [[ia,"a"],[iv,"v"]].forEach(([i,lab])=>svg.append(el("text",{x:X(pos(i)),y:Y(r.out[i].Pla)-7,"text-anchor":"middle","font-size":11,"font-weight":700,fill:"var(--la)"},lab)));
+  // playhead
+  svg.append(el("line",{id:"ph1",x1:0,x2:0,y1:pTop-6,y2:sBot,stroke:"var(--acc)","stroke-width":1.5}));
+  svg._X = X; svg._idx = idx; svg._ev = ev;
+  $("hrLbl").textContent = `${Math.round(P.hr)} bpm · one beat = ${(r.T*1000).toFixed(0)} ms`;
+}
+
+// ---------- PV loop ----------
+function drawPV(){
+  const svg = $("pv"); svg.innerHTML = "";
+  const r = R, L=46, B=296, W=410, T=12;
+  const vMax = Math.max(220, Math.ceil(Math.max(r.EDV, RN.EDV)/20)*20+30), pMax = Math.max(140, Math.ceil(Math.max(r.pk, RN.pk)/20)*20+20);
+  const X = v => L + (W-L)*v/vMax, Y = p => B - (B-T)*p/pMax;
+  for (let v=0; v<=vMax; v+=40) { svg.append(el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:"var(--grid)"})); svg.append(el("text",{x:X(v),y:B+15,"text-anchor":"middle","font-size":10.5,fill:"var(--muted)"},v)); }
+  for (let p=0; p<=pMax; p+=20) { svg.append(el("line",{x1:L,x2:W,y1:Y(p),y2:Y(p),stroke:"var(--grid)"})); svg.append(el("text",{x:L-6,y:Y(p)+4,"text-anchor":"end","font-size":10.5,fill:"var(--muted)"},p)); }
+  svg.append(el("text",{x:(L+W)/2,y:B+30,"text-anchor":"middle","font-size":11,fill:"var(--muted)"},"LV volume (mL)"));
+  svg.append(el("text",{x:11,y:(T+B)/2,"text-anchor":"middle","font-size":11,fill:"var(--muted)",transform:`rotate(-90 11 ${(T+B)/2})`},"LV pressure (mmHg)"));
+  // ESPVR & EDPVR
+  const v2 = Math.min(vMax, P.V0 + pMax/P.Ees); svg.append(el("line",{x1:X(P.V0),y1:Y(0),x2:X(v2),y2:Y(P.Ees*(v2-P.V0)),stroke:"var(--muted)","stroke-width":1.3,"stroke-dasharray":"5 4"}));
+  svg.append(el("text",{x:X(v2)+4,y:Y(P.Ees*(v2-P.V0))+12,"font-size":10.5,fill:"var(--muted)"},"ESPVR"));
+  let d=""; for (let v=P.V0; v<=vMax; v+=2) { const p = P.edA*(Math.exp(P.edB*(v-P.V0))-1); if (p>pMax) break; d += (d?"L":"M")+X(v).toFixed(1)+" "+Y(p).toFixed(1); }
+  svg.append(el("path",{d,fill:"none",stroke:"var(--muted)","stroke-width":1.3,"stroke-dasharray":"5 4"}));
+  svg.append(el("text",{x:W-4,y:Y(Math.min(pMax*0.9, P.edA*(Math.exp(P.edB*(Math.min(vMax,(Math.log(pMax*0.9/P.edA+1)/P.edB)+P.V0)-P.V0))-1)))-6,"text-anchor":"end","font-size":10.5,fill:"var(--muted)"},"EDPVR"));
+  const loop = (rr, col, w, dash) => { let d=""; rr.out.forEach((o,i)=>{ if (i%3===0) d += (i?"L":"M")+X(o.Vlv).toFixed(1)+" "+Y(o.Plv).toFixed(1); }); svg.append(el("path",{d:d+"Z",fill:dash?"none":"var(--lv)","fill-opacity":dash?0:0.08,stroke:col,"stroke-width":w,"stroke-dasharray":dash||"","stroke-linejoin":"round"})); };
+  if ((ghost || (quiz && quiz.ghost)) && cur!=="normal") loop(RN, "var(--ghost)", 1.8, "5 4");
+  loop(r, "var(--lv)", 2.8);
+  if (!quiz) { const ev = events(r); [[ev.mvc,"A","MV closes"],[ev.avo,"B","AV opens"],[ev.avc,"C","AV closes"],[ev.mvo,"D","MV opens"]].forEach(([i,ch,lab])=>{ const o=r.out[i], x=X(o.Vlv), y=Y(o.Plv);
+    svg.append(el("circle",{cx:x,cy:y,r:9,fill:"var(--panel)",stroke:"var(--text)","stroke-width":1.4})); svg.append(el("text",{x,y:y+4,"text-anchor":"middle","font-size":10.5,"font-weight":800,fill:"var(--text)"},ch)); });
+    }
+  svg.append(el("circle",{id:"dot",r:6,fill:"var(--acc)",stroke:"var(--panel)","stroke-width":2}));
+  svg._X = X; svg._Y = Y;
+}
+
+// ---------- valve schematic ----------
+function drawHeart(i){
+  const svg = $("heart"), o = R.out[i]; const vMax = Math.max(R.EDV, 130);
+  const s = 0.55 + 0.45*Math.sqrt(o.Vlv/vMax);
+  const mvOpen = o.Qmv > 0.5, avOpen = o.Qav > 0.5, mrJet = o.Qmv < -0.5, arJet = o.Qav < -0.5;
+  svg.innerHTML = `
+   <path d="M112 64 L112 26 Q112 9 96 9 L76 9" fill="none" stroke="var(--ao)" stroke-width="12" stroke-linecap="round" opacity=".55"/><text x="80" y="27" font-size="8.5" fill="var(--muted)">aorta</text>
+   <circle cx="44" cy="44" r="${20 + 6*Math.max(0,(o.Vla-40)/60)}" fill="var(--la)" opacity=".3" stroke="var(--la)" stroke-width="2"/>
+   <text x="44" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">LA</text>
+   <ellipse cx="80" cy="${120}" rx="${40*s}" ry="${48*s}" fill="var(--lv)" opacity=".28" stroke="var(--lv)" stroke-width="2.4"/>
+   <text x="80" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">LV</text>
+   <g stroke="var(--text)" stroke-width="3" stroke-linecap="round">
+    ${mvOpen ? `<line x1="46" y1="70" x2="44" y2="84"/><line x1="66" y1="70" x2="68" y2="84"/>` : `<line x1="46" y1="72" x2="56" y2="76"/><line x1="66" y1="72" x2="56" y2="76"/>`}
+    ${avOpen ? `<line x1="102" y1="62" x2="100" y2="48"/><line x1="122" y1="62" x2="124" y2="48"/>` : `<line x1="102" y1="60" x2="112" y2="56"/><line x1="122" y1="60" x2="112" y2="56"/>`}
+   </g>
+   ${mvOpen ? `<path d="M56 64 L56 90" stroke="var(--la)" stroke-width="2.5" marker-end="url(#ar)"/>` : ""}
+   ${avOpen ? `<path d="M112 72 L112 40" stroke="var(--ao)" stroke-width="2.5" marker-end="url(#ar)"/>` : ""}
+   ${mrJet ? `<path d="M56 86 L52 58" stroke="#f85149" stroke-width="3" marker-end="url(#ar2)"/>` : ""}
+   ${arJet ? `<path d="M112 44 L108 76" stroke="#f85149" stroke-width="3" marker-end="url(#ar2)"/>` : ""}
+   <text x="30" y="80" text-anchor="middle" font-size="8.5" fill="var(--muted)">mitral</text><text x="136" y="72" text-anchor="middle" font-size="8.5" fill="var(--muted)">aortic</text>
+   <defs><marker id="ar" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0 0L6 3L0 6z" fill="var(--muted)"/></marker><marker id="ar2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0 0L6 3L0 6z" fill="#f85149"/></marker></defs>`;
+  $("valves").innerHTML = `Mitral <b>${mvOpen?"open":mrJet?"leaking":"closed"}</b> · Aortic <b>${avOpen?"open":arJet?"leaking":"closed"}</b>`;
+}
+
+// ---------- stats ----------
+function stats(){
+  const r = R, b = RN, row = (lab, v, bv, f, good) => { const d = v - bv, show = cur!=="normal" && Math.abs(d) > Math.abs(bv)*0.03 + 0.4;
+    return `<div class="st"><b>${f(v)}${show?`<em class="${d>0?"up":"dn"}">${d>0?"▲":"▼"}</em>`:""}</b><span>${lab}</span></div>`; };
+  const fwd = r.net;
+  $("stats").innerHTML = row("End-diastolic vol (mL)", r.EDV, b.EDV, v=>v.toFixed(0)) + row("End-systolic vol (mL)", r.ESV, b.ESV, v=>v.toFixed(0)) + row("Ejection fraction", r.EF*100, b.EF*100, v=>v.toFixed(0)+"%")
+    + row(r.back+r.mrBack>1 ? "Forward SV (mL)" : "Stroke volume (mL)", fwd, b.net, v=>v.toFixed(0)) + row("Cardiac output (L/min)", r.CO, b.CO, v=>v.toFixed(1))
+    + `<div class="st"><b>${r.sys.toFixed(0)}/${r.dia.toFixed(0)}</b><span>Aortic BP (mmHg)</span></div>`
+    + row("LV end-diastolic P", r.lvedp, b.lvedp, v=>v.toFixed(0)) + row("Mean LA pressure", r.laMean, b.laMean, v=>v.toFixed(0)) + row("Peak LV pressure", r.pk, b.pk, v=>v.toFixed(0));
+}
+
+// ---------- UI ----------
+function renderPresets(){
+  let h = "", g = "";
+  PRESETS.forEach(p=>{ if (p.g!==g) { g = p.g; h += `<span class="gl">${g}</span>`; } h += `<button class="${cur===p.k?"on":""}" data-pre="${p.k}">${p.n}</button>`; });
+  $("presets").innerHTML = h;
+  $("sliders").innerHTML = SL.map(s=>`<div class="sl"><label>${s.n} <span id="v_${s.k}">${s.f(P[s.k])}</span></label><input type="range" min="${s.min}" max="${s.max}" step="${s.st}" value="${P[s.k]}" data-sl="${s.k}"><small>${s.d}</small></div>`).join("");
+  const pr = PRESETS.find(p=>p.k===cur);
+  $("info").innerHTML = pr ? `<b class="t">${pr.t}</b><ul>${pr.pts.map(x=>`<li>${x}</li>`).join("")}</ul><div class="pearl">💡 ${pr.pearl}</div>` : `<b class="t">Custom settings</b>Compare against the dashed normal loop (turn on “Compare to normal”).`;
+}
+function run(){ R = simulate(P); drawWig(); drawPV(); stats(); }
+function setPreset(k){ cur = k; const pr = PRESETS.find(p=>p.k===k); P = Object.assign({}, BASE, pr.p); renderPresets(); run(); }
+document.addEventListener("click", e=>{
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.pre) setPreset(b.dataset.pre);
+  else if (b.dataset.sp) { speed = +b.dataset.sp; document.querySelectorAll("#speed button").forEach(x=>x.classList.toggle("on", x===b)); }
+  else if (b.id==="play") { playing = !playing; b.textContent = playing ? "⏸ Pause" : "▶ Play"; }
+  else if (b.id==="ghostBtn") { ghost = !ghost; b.classList.toggle("on", ghost); drawWig(); drawPV(); }
+  else if (b.id==="quizBtn") { quiz ? endQuiz() : startQuiz(); }
+  else if (b.dataset.qa) answer(b);
+  else if (b.id==="qnext") nextQ();
+});
+document.addEventListener("input", e=>{ const k = e.target.dataset.sl; if (!k) return; P[k] = +e.target.value; $("v_"+k).textContent = SL.find(s=>s.k===k).f(P[k]);
+  if (cur!=="custom") { const was = PRESETS.find(p=>p.k===cur); cur = "custom"; document.querySelectorAll("#presets button").forEach(x=>x.classList.remove("on")); $("info").innerHTML = `<b class="t">Custom settings</b>Started from “${was?was.n:"Normal"}”. Turn on “Compare to normal” to see the dashed normal loop.`; }
+  run(); });
+
+// ---------- quiz ----------
+const QPOOL = ["pre","aft","con","hfr","hfp","as","ar","ms","mr"];
+function startQuiz(){ quiz = {n:0, score:0, order: QPOOL.slice().sort(()=>Math.random()-0.5), ghost:true}; document.body.classList.add("quiz"); $("quizBtn").textContent = "✕ End quiz"; nextQ(); }
+function endQuiz(){ quiz = null; document.body.classList.remove("quiz"); $("quizBtn").textContent = "🎯 Quiz me"; setPreset("normal"); }
+function nextQ(){
+  if (quiz.n >= quiz.order.length) { $("quiz").innerHTML = `<h3>Quiz complete</h3><p style="font-size:16px">You got <b>${quiz.score} / ${quiz.order.length}</b>.</p><button class="btn" id="quizBtn2" onclick="startQuiz()">Try again</button> <button class="btn" onclick="endQuiz()">Back to the simulator</button>`; return; }
+  const k = quiz.order[quiz.n], pr = PRESETS.find(p=>p.k===k);
+  cur = k; P = Object.assign({}, BASE, pr.p); quiz.ans = k; run(); cur = k;
+  const wrong = QPOOL.filter(x=>x!==k).sort(()=>Math.random()-0.5).slice(0,3), opts = [k, ...wrong].sort(()=>Math.random()-0.5);
+  $("quiz").innerHTML = `<h3>Question ${quiz.n+1} of ${quiz.order.length} <span style="text-transform:none;letter-spacing:0">Score ${quiz.score}</span></h3>
+    <div style="font-size:14.5px;font-weight:600">Which condition produces the red loop and the Wiggers diagram shown? <span style="color:var(--muted);font-weight:500">(dashed = normal)</span></div>
+    <div class="qopts">${opts.map(o=>`<button data-qa="${o}">${PRESETS.find(p=>p.k===o).n}</button>`).join("")}</div><div class="qfb" id="qfb"></div>`;
+}
+function answer(b){
+  if (quiz.done === quiz.n) return; quiz.done = quiz.n;
+  const ok = b.dataset.qa === quiz.ans; if (ok) quiz.score++;
+  document.querySelectorAll("[data-qa]").forEach(x=>{ if (x.dataset.qa===quiz.ans) x.classList.add("ok"); else if (x===b) x.classList.add("bad"); });
+  const pr = PRESETS.find(p=>p.k===quiz.ans);
+  $("qfb").innerHTML = `<b>${ok?"Correct!":"Not quite."}</b> ${pr.t}:<ul style="margin:4px 0 8px;padding-left:18px">${pr.pts.map(x=>`<li>${x}</li>`).join("")}</ul><button class="btn" id="qnext">${quiz.n+1<quiz.order.length?"Next →":"See score"}</button>`;
+  quiz.n++;
+  drawWig(); drawPV();   // reveal murmurs / labels
+}
+
+// ---------- animation ----------
+function frame(ts){
+  const dtw = Math.min(0.1, (ts - (last||ts))/1000); last = ts;
+  if (playing && R) { ph = (ph + dtw*speed/R.T) % 1; }
+  if (R) {
+    const w = $("wig"), idx = w._idx; if (idx) { const k = Math.floor(ph*(idx.length-1)), i = idx[k], x = w._X(k);
+      const l = document.getElementById("ph1"); if (l) { l.setAttribute("x1",x); l.setAttribute("x2",x); }
+      const pv = $("pv"), o = R.out[i], dot = document.getElementById("dot"); if (dot && pv._X) { dot.setAttribute("cx", pv._X(o.Vlv)); dot.setAttribute("cy", pv._Y(o.Plv)); }
+      if (!quiz || quiz.done === quiz.n-1) { const [a,bb] = phaseOf(i, w._ev, R); $("phase").innerHTML = `<b>${a}</b> — ${bb}`; } else $("phase").innerHTML = "";
+      drawHeart(i); }
+  }
+  requestAnimationFrame(frame);
+}
+renderPresets(); run(); requestAnimationFrame(frame);
+window.addEventListener("message", e=>{ if (e.data==="jj-theme") { drawWig(); drawPV(); } });
+</script></body></html>

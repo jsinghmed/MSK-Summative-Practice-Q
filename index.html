@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="jjlock">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -555,6 +555,11 @@ table.rt tr.click:hover td{background:var(--hover)}
 .bjlb .lbme{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .bjlb .lbme b{color:var(--text)}
 @media (max-width:600px){.bjctl{gap:8px;padding:10px}.bjchip{width:46px;height:46px;font-size:12px}.bjbtn{padding:10px 14px}}
+/* sign-in lock: the app stays hidden until auth.js confirms a signed-in, allowed user */
+html.jjlock #app{visibility:hidden!important}
+.jjlockmsg{position:fixed;inset:0;z-index:9995;display:grid;place-items:center;text-align:center;padding:24px;background:#1b3550;color:#e6edf3;font:15px/1.5 Inter,system-ui,sans-serif}
+.jjlockmsg b{display:block;font-size:20px;margin-bottom:6px}
+.jjlockmsg button{margin-top:14px;background:#fff;color:#1b3550;border:none;border-radius:9px;padding:10px 18px;font:600 15px Inter,system-ui,sans-serif;cursor:pointer}
 /* welcome screen */
 .splash{position:fixed;inset:0;z-index:9999;background:#1b3550;background:radial-gradient(ellipse at 50% 40%,#22436a 0%,#1b3550 55%,#152a40 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(28px,6vh,56px);padding:24px;transition:opacity .45s ease,visibility .45s;color:#fff}
 .splash.out{opacity:0;visibility:hidden}
@@ -1462,6 +1467,8 @@ const NVI = {
   plexus: NVS('<path d="M3 6h5M3 12h5M3 18h5M8 6l6 3M8 12h6M8 18l6-3M14 9l7-2M14 12h7M14 15l7 2"/>'),
   limb: NVS('<path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M12 11l8-4.5M12 11v9M12 11L4 6.5"/>'),
   guide: NVS('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h5"/>'),
+  ap: NVS('<path d="M2 15h4l2-10 3 14 2-9h3l2 3h4"/>'),
+  pv: NVS('<path d="M7 19V8a3 3 0 0 1 3-3h4l3 6v8z"/><path d="M4 21h17M3 3v18"/>'),
   anki: NVS('<rect x="6" y="3" width="13" height="16" rx="2"/><path d="M3 7v12a2 2 0 0 0 2 2h10"/>')
 };
 function navRow(attr, ic, label, n, on, cls){
@@ -1482,6 +1489,7 @@ function renderChaps(){
   }
   let tools = "";
   if (S.course==="msk") tools += navRow('data-act="limb3d"', NVI.limb, "3D upper limb", "", view==="limb3d") + navRow('data-act="leg3d"', NVI.limb, "3D lower limb", "", view==="leg3d") + navRow('data-act="plexus"', NVI.plexus, "Brachial plexus", "", view==="plexus");
+  if (S.course==="crs") tools += navRow('data-act="cap"', NVI.ap, "Cardiac action potentials", "", view==="cap") + navRow('data-act="pvl"', NVI.pv, "Cardiac cycle & PV loop", "", view==="pvl");
   if (S.anki && S.anki.length) tools += navRow('data-act="anki"', NVI.anki, "Anki export", S.anki.length, view==="anki");
   if (tools) h += `<div class="chap-h">STUDY TOOLS</div><div class="nvg">${tools}</div>`;
   if (courseTests().length) {
@@ -2593,6 +2601,8 @@ function renderAll(){
   } else if (view==="builder") renderBuilder();
   else if (view==="notes") renderNotes();
   else if (view==="plexus") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← MSK home</button><h2>Brachial plexus</h2><a class="btn" href="brachial-plexus.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="brachial-plexus.html?v=35" title="Interactive brachial plexus"></iframe></div>`);
+  else if (view==="cap") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← CRS home</button><h2>Cardiac action potentials</h2><a class="btn" href="cardiac-ap.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="cardiac-ap.html?v=1" title="Interactive cardiac action potential explorer"></iframe></div>`);
+  else if (view==="pvl") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← CRS home</button><h2>Cardiac cycle & PV loop</h2><a class="btn" href="cardiac-cycle.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="cardiac-cycle.html?v=1" title="Interactive cardiac cycle and pressure-volume loop simulator"></iframe></div>`);
   else if (view==="limb3d") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← MSK home</button><h2>3D upper limb atlas</h2><a class="btn" href="upper-limb-3d.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="upper-limb-3d.html?v=1" title="Interactive 3D upper limb atlas"></iframe></div>`);
   else if (view==="leg3d") showPage(`<div class="page plexpage"><div class="plextop"><button class="btn" data-plexback>← MSK home</button><h2>3D lower limb atlas</h2><a class="btn" href="lower-limb-3d.html" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="plexframe" src="lower-limb-3d.html?v=1" title="Interactive 3D lower limb atlas"></iframe></div>`);
   else if (view==="guides") renderGuides();
@@ -2796,7 +2806,7 @@ document.addEventListener("click", e=>{
   const gj = t.closest("[data-gjump]");
   if (gj) { e.preventDefault(); const el = document.getElementById(gj.dataset.gjump); if (el) el.scrollIntoView({behavior:"smooth", block:"start"}); return; }
   const act = t.closest("[data-act]");
-  if (act) { view = ({build:"builder", plexus:"plexus", limb3d:"limb3d", leg3d:"leg3d", guides:"guides", anki:"anki", notes:"notes"})[act.dataset.act] || "notes"; $("side").classList.remove("open"); renderAll(); $("main").scrollTo({top:0}); return; }
+  if (act) { view = ({build:"builder", plexus:"plexus", limb3d:"limb3d", leg3d:"leg3d", cap:"cap", pvl:"pvl", guides:"guides", anki:"anki", notes:"notes"})[act.dataset.act] || "notes"; $("side").classList.remove("open"); renderAll(); $("main").scrollTo({top:0}); return; }
   if (t.closest("[data-plexback]")) { view = "home"; renderAll(); $("main").scrollTo({top:0}); return; }
   // sidebar
   const rv = t.closest("[data-rv]");
@@ -3105,6 +3115,15 @@ window.JJ_STATS = function(st){
 })();
 </script>
 <script>document.write('<script src="firebase-config.js?t=' + Date.now() + '"><\/script>');</script>
-<script src="auth.js?v=34"></script>
+<script src="auth.js?v=35"></script>
+<script>
+// Fail closed: if sign-in can't load (blocked, missing or failed file), the site stays locked instead of opening.
+setTimeout(function(){
+  if (!document.documentElement.classList.contains("jjlock") || document.getElementById("jjGate")) return;
+  var m = document.createElement("div"); m.className = "jjlockmsg";
+  m.innerHTML = '<div><b>Sign-in couldn\'t load</b>JJ QBank needs Google sign-in. Check your connection, turn off any blocker for this site, and refresh.<br><button onclick="location.reload()">Refresh</button></div>';
+  document.body.appendChild(m);
+}, 4000);
+</script>
 </body>
 </html>
