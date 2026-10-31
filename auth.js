@@ -60,8 +60,8 @@
     gateStatus("");
     $("jjOther").onclick = ()=>{ kicked = false; gateSignIn(); };
   }
-  function showGate(){ gate.hidden = false; }
-  function hideGate(){ gate.hidden = true; }
+  function showGate(){ gate.hidden = false; document.documentElement.classList.add("jjlock"); }
+  function hideGate(){ gate.hidden = true; document.documentElement.classList.remove("jjlock"); }
 
   // ---------------- helpers ----------------
   const parse = t => { try { return JSON.parse(t) || {}; } catch(e) { return {}; } };
